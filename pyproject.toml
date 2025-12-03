@@ -1,0 +1,36 @@
+[project]
+name = "handlebar-python"
+version = "0.1.0"
+description = "Core governance layer for handlebar (https://gethandlebar.com)"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+keywords = ["governance", "ai", "agent"]
+authors = [{ name = "Handlebar Team", email = "contact@gethandlebar.com" }]
+
+[project.urls]
+Homepage = "https://gethandlebar.com"
+Repository = "https://github.com/gethandlebar/handlebar-python"
+Issues = "https://github.com/gethandlebar/handlebar-python/issues"
+
+[tool.uv.workspace]
+members = [
+    "packages/core",
+    "packages/google-adk",
+]
+
+[tool.uv.sources]
+handlebar-core = { workspace = true }
+handlebar-google-adk = { workspace = true }
+
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.1",
+    "ruff>=0.14.7",
+    "ty>=0.0.1a29",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.15,<0.10.0"]
+build-backend = "uv_build"

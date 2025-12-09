@@ -128,16 +128,29 @@ def allow() -> RuleAction:
 
 
 class _RuleBuilder:
-    def __call__(self, when: RuleWhen, *, priority: int, if_: RuleCondition, do: List[RuleAction]) -> RuleConfig:
-        return {"priority": priority, "when": when, "condition": if_, "actions": list(do)}
+    def __call__(
+        self, when: RuleWhen, *, priority: int, if_: RuleCondition, do: List[RuleAction]
+    ) -> RuleConfig:
+        return {
+            "priority": priority,
+            "when": when,
+            "condition": if_,
+            "actions": list(do),
+        }
 
-    def pre(self, *, priority: int, if_: RuleCondition, do: List[RuleAction]) -> RuleConfig:
+    def pre(
+        self, *, priority: int, if_: RuleCondition, do: List[RuleAction]
+    ) -> RuleConfig:
         return self("pre", priority=priority, if_=if_, do=do)
 
-    def post(self, *, priority: int, if_: RuleCondition, do: List[RuleAction]) -> RuleConfig:
+    def post(
+        self, *, priority: int, if_: RuleCondition, do: List[RuleAction]
+    ) -> RuleConfig:
         return self("post", priority=priority, if_=if_, do=do)
 
-    def both(self, *, priority: int, if_: RuleCondition, do: List[RuleAction]) -> RuleConfig:
+    def both(
+        self, *, priority: int, if_: RuleCondition, do: List[RuleAction]
+    ) -> RuleConfig:
         return self("both", priority=priority, if_=if_, do=do)
 
 

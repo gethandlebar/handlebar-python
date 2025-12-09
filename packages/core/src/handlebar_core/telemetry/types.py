@@ -2,6 +2,7 @@
 from handlebar_core.types import GovernanceDecision, JSONValue
 from typing import Literal, Union, TypedDict, Dict, List, Optional
 
+
 class AuditUserInfo(TypedDict, total=False):
     userId: str
     userCategory: str
@@ -40,6 +41,7 @@ ToolMetaMap = Dict[str, JSONValue]
 
 # ---- Envelope ---------------------------------------------------------------
 
+
 class AuditEnvelope(TypedDict, total=False):
     schema: Literal["handlebar.audit.v1"]
     ts: str  # ISO8601 on the wire
@@ -52,7 +54,9 @@ class AuditEnvelope(TypedDict, total=False):
     redaction: AuditRedactionInfo
     agentId: str
 
+
 # ---- run.started ------------------------------------------------------------
+
 
 class RunStartedAgentInfo(TypedDict, total=False):
     framework: str
@@ -97,6 +101,7 @@ class RunStartedEvent(AuditEnvelope):
 
 # ---- tool.decision ----------------------------------------------------------
 
+
 class ToolInfo(TypedDict, total=False):
     name: str
     categories: List[str]
@@ -115,6 +120,7 @@ class ToolDecisionEvent(AuditEnvelope):
 
 
 # ---- tool.result ------------------------------------------------------------
+
 
 class ToolErrorInfo(TypedDict, total=False):
     name: str
@@ -138,6 +144,7 @@ class ToolResultEvent(AuditEnvelope):
 
 # ---- run.ended --------------------------------------------------------------
 
+
 class RunEndedData(TypedDict, total=False):
     status: Literal["ok", "error", "blocked"]
     totalSteps: int
@@ -151,6 +158,7 @@ class RunEndedEvent(AuditEnvelope):
 
 
 # ---- error ------------------------------------------------------------------
+
 
 class ErrorData(TypedDict, total=False):
     scope: Literal["governance", "adapter", "transport", "agent"]

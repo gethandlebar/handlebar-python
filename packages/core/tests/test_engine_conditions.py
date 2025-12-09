@@ -32,6 +32,7 @@ def _engine_with_tools(
     cfg.update(cfg_overrides)
     return GovernanceEngine(cfg)
 
+
 @pytest.mark.asyncio
 async def test_tool_tag_has_blocks_danger_tag() -> None:
     tools = [
@@ -40,9 +41,7 @@ async def test_tool_tag_has_blocks_danger_tag() -> None:
     ]
 
     rules = [
-        config_to_rule(
-            rule.pre(priority=1, if_=tool_tag.has("danger"), do=[block()])
-        )
+        config_to_rule(rule.pre(priority=1, if_=tool_tag.has("danger"), do=[block()]))
     ]
 
     engine = _engine_with_tools(tools, rules=rules)
@@ -55,6 +54,7 @@ async def test_tool_tag_has_blocks_danger_tag() -> None:
     assert d2["effect"] == "block"
     assert d2["code"] == "BLOCKED_RULE"
 
+
 @pytest.mark.asyncio
 async def test_tool_tag_any_of_and_all_of() -> None:
     tools = [
@@ -64,7 +64,9 @@ async def test_tool_tag_any_of_and_all_of() -> None:
 
     rules_any = [
         config_to_rule(
-            rule.pre(priority=1, if_=tool_tag.any_of(["internet", "compute"]), do=[block()])
+            rule.pre(
+                priority=1, if_=tool_tag.any_of(["internet", "compute"]), do=[block()]
+            )
         )
     ]
     engine_any = _engine_with_tools(tools, rules=rules_any)
@@ -78,7 +80,9 @@ async def test_tool_tag_any_of_and_all_of() -> None:
 
     rules_all = [
         config_to_rule(
-            rule.pre(priority=1, if_=tool_tag.all_of(["search", "internet"]), do=[block()])
+            rule.pre(
+                priority=1, if_=tool_tag.all_of(["search", "internet"]), do=[block()]
+            )
         )
     ]
     engine_all = _engine_with_tools(tools, rules=rules_all)
@@ -89,6 +93,7 @@ async def test_tool_tag_any_of_and_all_of() -> None:
 
     d_all_db = await engine_all.before_tool(ctx_all, tool_name="db.query", args={})
     assert d_all_db["effect"] == "allow"
+
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -120,6 +125,7 @@ async def test_tool_name_conditions(cond, tool: str, should_block: bool) -> None
     else:
         assert d["effect"] == "allow"
 
+
 @pytest.mark.asyncio
 async def test_sequence_must_have_called() -> None:
     tools = [
@@ -145,6 +151,7 @@ async def test_sequence_must_have_called() -> None:
     d = await engine.before_tool(ctx, tool_name="db.query", args={})
     assert d["effect"] == "block"
     assert d["code"] == "BLOCKED_RULE"
+
 
 @pytest.mark.asyncio
 async def test_sequence_must_not_have_called() -> None:

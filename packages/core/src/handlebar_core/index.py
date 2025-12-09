@@ -93,7 +93,6 @@ __all__ = [
     "ToolTagCondition",
     "ExecutionTimeScope",
     "ExecutionTimeCondition",
-    "SequenceCondition",
     "MaxCallsSelector",
     "MaxCallsCondition",
     "CustomFunctionCondition",

@@ -246,6 +246,7 @@ class HttpSink(AuditSink):
 
 # ==== Telemetry singleton ====================================================
 
+
 class TelemetryOptions(t.TypedDict, total=False):
     api_key: str
     endpoint: str
@@ -305,7 +306,10 @@ Telemetry = _TelemetrySingleton()
 
 # ==== Emission ==============================================================
 
-def emit(kind: AuditKind, data: Dict[str, Any], extras: Optional[Dict[str, Any]] = None) -> None:
+
+def emit(
+    kind: AuditKind, data: Dict[str, Any], extras: Optional[Dict[str, Any]] = None
+) -> None:
     ctx = get_run_context()
     if not ctx or not ctx.get("runId"):
         return

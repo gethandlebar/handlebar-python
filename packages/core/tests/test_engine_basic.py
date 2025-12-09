@@ -29,6 +29,7 @@ def _engine_with_tools(
     cfg.update(cfg_overrides)
     return GovernanceEngine(cfg)
 
+
 @pytest.mark.xfail(reason="Need to look into failure")
 @pytest.mark.asyncio
 async def test_allow_by_default() -> None:
@@ -39,7 +40,9 @@ async def test_allow_by_default() -> None:
     engine = _engine_with_tools(tools)
     ctx = engine.create_run_context(run_id="run-allow-1", user_category="test")
 
-    decision = await engine.before_tool(ctx, tool_name="web-search", args={"q": "pizza"})
+    decision = await engine.before_tool(
+        ctx, tool_name="web-search", args={"q": "pizza"}
+    )
     assert decision["effect"] == "allow"
     assert engine.should_block(decision) is False
 
@@ -55,16 +58,20 @@ async def test_allow_by_default() -> None:
     assert len(ctx["history"]) == 1
     assert ctx["counters"]["__hb_totalDurationMs"] >= elapsed_ms
 
+
 @pytest.mark.asyncio
 async def test_block_uncategorised_when_configured() -> None:
     tools = [{"name": "email.send"}]
     engine = _engine_with_tools(tools, default_uncategorised="block")
     ctx = engine.create_run_context(run_id="run-uncat-1", user_category="test")
 
-    decision = await engine.before_tool(ctx, tool_name="email.send", args={"to": "a@b.com"})
+    decision = await engine.before_tool(
+        ctx, tool_name="email.send", args={"to": "a@b.com"}
+    )
     assert decision["effect"] == "block"
     assert decision["code"] == "BLOCKED_UNCATEGORISED"
     assert engine.should_block(decision) is True
+
 
 @pytest.mark.asyncio
 async def test_pre_rule_block() -> None:
@@ -82,10 +89,13 @@ async def test_pre_rule_block() -> None:
     engine = _engine_with_tools(tools, rules=rules)
     ctx = engine.create_run_context(run_id="run-rule-1", user_category="test")
 
-    decision = await engine.before_tool(ctx, tool_name="db.query", args={"sql": "SELECT 1"})
+    decision = await engine.before_tool(
+        ctx, tool_name="db.query", args={"sql": "SELECT 1"}
+    )
     assert decision["effect"] == "block"
     assert decision["code"] == "BLOCKED_RULE"
     assert engine.should_block(decision) is True
+
 
 @pytest.mark.asyncio
 async def test_max_calls_blocks_third() -> None:
@@ -96,7 +106,9 @@ async def test_max_calls_blocks_third() -> None:
         config_to_rule(
             rule.both(
                 priority=5,
-                if_=max_calls(selector={"by": "toolName", "patterns": ["web-*"]}, max_=2),
+                if_=max_calls(
+                    selector={"by": "toolName", "patterns": ["web-*"]}, max_=2
+                ),
                 do=[block()],
             )
         )

@@ -5,12 +5,14 @@ from google.adk.sessions import BaseSessionService
 
 from .plugin import HandlebarPlugin
 
+
 class HandlebarRunner(Runner):
     """
     Wrapper around google.adk.runners.Runner which adds HandlebarPlugin to the agent.
 
     This provides governance utilities (audit logs, rule enforcement) on tool callbacks.
     """
+
     def __init__(
         self,
         *,

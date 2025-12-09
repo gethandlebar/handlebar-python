@@ -1,8 +1,5 @@
-
 from __future__ import annotations
 
-import json
-import os
 from typing import Any, Dict, List, Optional, Literal
 
 import httpx
@@ -23,6 +20,7 @@ async def fetch_rules(
 ) -> List[Rule]:
     # TODO: get rules
     return []
+
 
 async def upsert_agent(
     *,
@@ -67,12 +65,15 @@ async def upsert_agent(
     async with httpx.AsyncClient(timeout=10.0) as client:
         resp = await client.put(url, json=payload, headers=headers)
         if resp.status_code not in (200, 201):
-            raise HandlebarApiError(f"Failed to upsert agent: {resp.status_code} {resp.text}")
+            raise HandlebarApiError(
+                f"Failed to upsert agent: {resp.status_code} {resp.text}"
+            )
         data = resp.json()
         agent_id = data.get("id") or data.get("agentId")
         if not agent_id:
             raise HandlebarApiError("Agent upsert response missing 'id'/'agentId'")
         return str(agent_id)
+
 
 async def fetch_governance_config(
     *,
@@ -99,6 +100,6 @@ async def fetch_governance_config(
     }
 
     if agent_id:
-            cfg["agentId"] = agent_id
+        cfg["agentId"] = agent_id
 
     return cfg

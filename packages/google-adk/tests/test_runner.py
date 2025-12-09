@@ -12,6 +12,7 @@ from handlebar_core.types import Rule, ToolMeta, GovernanceConfig
 from handlebar_google_adk.plugin import HandlebarPlugin
 from handlebar_google_adk.runner import HandlebarRunner
 
+
 class DummyCallbackContext:
     """
     Minimal stand-in for google.adk.agents.callback_context.CallbackContext.
@@ -41,6 +42,7 @@ class DummyToolContext:
         self.invocation_id = invocation_id
         self.state: Dict[str, Any] = {}
 
+
 # ---------------------------------------------------------------------------
 # Test scaffolding
 # ---------------------------------------------------------------------------
@@ -58,18 +60,21 @@ class DummyTool(BaseTool):
 
 
 def make_rule_blocking_tool(tool_name: str) -> Rule:
-    return cast(Rule, {
-        "id": "rule-block",
-        "policy_id": "policy-1",
-        "priority": 0,
-        "when": "pre",
-        "condition": {
-            "kind": "toolName",
-            "op": "eq",
-            "value": tool_name,
+    return cast(
+        Rule,
+        {
+            "id": "rule-block",
+            "policy_id": "policy-1",
+            "priority": 0,
+            "when": "pre",
+            "condition": {
+                "kind": "toolName",
+                "op": "eq",
+                "value": tool_name,
+            },
+            "actions": [{"type": "block"}],
         },
-        "actions": [{"type": "block"}],
-    })
+    )
 
 
 def make_allow_config(tools: List[ToolMeta]) -> GovernanceConfig:
@@ -98,7 +103,9 @@ def make_block_config(tools: List[ToolMeta], tool_name: str) -> GovernanceConfig
 
 
 @pytest.mark.asyncio
-async def test_plugin_allows_tool_when_no_rules(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_plugin_allows_tool_when_no_rules(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """If backend returns no rules, tool should be allowed and after_tool should record history."""
 
     # Arrange: dummy tool + agent
@@ -141,11 +148,14 @@ async def test_plugin_allows_tool_when_no_rules(monkeypatch: pytest.MonkeyPatch)
     )
 
     # Simulate ADK invocation: before_agent -> before_tool -> after_tool
-    callback_ctx = cast(CallbackContext, DummyCallbackContext(
-        invocation_id="inv-1",
-        agent_name=agent.name,
-        session_id="sess-1",
-    ))
+    callback_ctx = cast(
+        CallbackContext,
+        DummyCallbackContext(
+            invocation_id="inv-1",
+            agent_name=agent.name,
+            session_id="sess-1",
+        ),
+    )
 
     # Initialise engine + RunContext
     await plugin.before_agent_callback(agent=agent, callback_context=callback_ctx)
@@ -188,7 +198,9 @@ async def test_plugin_allows_tool_when_no_rules(monkeypatch: pytest.MonkeyPatch)
 
 
 @pytest.mark.asyncio
-async def test_plugin_blocks_tool_when_rule_matches(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_plugin_blocks_tool_when_rule_matches(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """If backend returns a blocking rule for the tool, plugin should short-circuit and not call the tool."""
 
     blocked_name = "dangerous_tool"
@@ -226,11 +238,14 @@ async def test_plugin_blocks_tool_when_rule_matches(monkeypatch: pytest.MonkeyPa
         handlebar_base_url="https://example.com",
     )
 
-    callback_ctx = cast(CallbackContext, DummyCallbackContext(
-        invocation_id="inv-2",
-        agent_name=agent.name,
-        session_id="sess-2",
-    ))
+    callback_ctx = cast(
+        CallbackContext,
+        DummyCallbackContext(
+            invocation_id="inv-2",
+            agent_name=agent.name,
+            session_id="sess-2",
+        ),
+    )
 
     await plugin.before_agent_callback(agent=agent, callback_context=callback_ctx)
 

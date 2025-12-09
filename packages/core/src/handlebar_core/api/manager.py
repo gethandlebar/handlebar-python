@@ -32,7 +32,9 @@ class ApiManager:
             or os.getenv("HANDLEBAR_API_ENDPOINT")
             or "http://localhost:8000"
         )
-        self.api_key: Optional[str] = cfg.get("api_key") or os.getenv("HANDLEBAR_API_KEY")
+        self.api_key: Optional[str] = cfg.get("api_key") or os.getenv(
+            "HANDLEBAR_API_KEY"
+        )
         self._use_api: bool = bool(self.api_endpoint or self.api_key)
 
     def headers(self) -> Dict[str, str]:
@@ -41,13 +43,17 @@ class ApiManager:
             headers["Authorization"] = f"Bearer {self.api_key}"
         return headers
 
-    def fetch_agent_rules(self, agent_name: str, timeout: float = 5.0) -> Optional[List[Rule]]:
+    def fetch_agent_rules(
+        self, agent_name: str, timeout: float = 5.0
+    ) -> Optional[List[Rule]]:
         if not self._use_api:
             return None
 
         payload = json.dumps({"agentName": agent_name}).encode("utf-8")
         headers = {"content-type": "application/json", **self.headers()}
-        req = urllib.request.Request(self.api_endpoint, data=payload, headers=headers, method="POST")
+        req = urllib.request.Request(
+            self.api_endpoint, data=payload, headers=headers, method="POST"
+        )
 
         try:
             with urllib.request.urlopen(req, timeout=timeout) as resp:

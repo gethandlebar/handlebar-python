@@ -12,13 +12,18 @@ from google.adk.plugins.base_plugin import BasePlugin
 from google.adk.tools.base_tool import BaseTool
 from google.adk.tools.tool_context import ToolContext
 from google.adk import __version__ as adk_version
-from google.genai import types as genai_types
 
 
 from handlebar_core.engine import GovernanceEngine
 from handlebar_core.utils import slugify
 from handlebar_core.types import GovernanceDecision, RunContext, ToolMeta
-from handlebar_core.telemetry import Telemetry, HttpSink, emit, push_run_context, pop_run_context
+from handlebar_core.telemetry import (
+    Telemetry,
+    HttpSink,
+    emit,
+    push_run_context,
+    pop_run_context,
+)
 
 from .api import fetch_governance_config, upsert_agent
 
@@ -38,8 +43,8 @@ class HandlebarPlugin(BasePlugin):
         app_name: str,
         handlebar_api_key: str,
         handlebar_base_url: str = "https://api.gethandlebar.com",
-        handlebar_org_id: Optional[str] = None, # TODO: remove
-        handlebar_user_category: str = "default", # TODO: remove
+        handlebar_org_id: Optional[str] = None,  # TODO: remove
+        handlebar_user_category: str = "default",  # TODO: remove
         tool_categories: Optional[Dict[str, List[str]]] = None,
         default_uncategorised: Literal["allow", "block"] = "allow",
     ) -> None:
@@ -144,7 +149,8 @@ class HandlebarPlugin(BasePlugin):
         token = push_run_context(ctx)
         self._ctx_tokens[invocation_id] = token
 
-        emit("run.started",
+        emit(
+            "run.started",
             {
                 "agent": {
                     "framework": "google-adk",
@@ -161,7 +167,8 @@ class HandlebarPlugin(BasePlugin):
                 #     # TODO: check traceparent header in callback_context, drop it here
                 #     "traceparent": None,
                 # }
-            })
+            },
+        )
 
     async def after_run_callback(
         self, *, invocation_context: InvocationContext
@@ -175,12 +182,15 @@ class HandlebarPlugin(BasePlugin):
         """
         invocation_id = invocation_context.invocation_id
         ctx = self._get_ctx_for_invocation(invocation_id)
-        emit("run.ended", {
-            "status": "ok",
-            "totalSteps": len(ctx.get("history", [])) if ctx is not None else 0,
-            "firstErrorDecisionId": "", # deprecated: this field needs to be removed from source types.
-            "summary": "",
-        })
+        emit(
+            "run.ended",
+            {
+                "status": "ok",
+                "totalSteps": len(ctx.get("history", [])) if ctx is not None else 0,
+                "firstErrorDecisionId": "",  # deprecated: this field needs to be removed from source types.
+                "summary": "",
+            },
+        )
 
         token = self._ctx_tokens.pop(invocation_id, None)
         if token is not None:

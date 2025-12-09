@@ -18,7 +18,6 @@ from typing import Any, Dict
 from google.adk.agents import Agent  # alias for LlmAgent
 from google.adk.models.lite_llm import LiteLlm
 from google.adk.sessions import InMemorySessionService
-from google.adk.tools.base_tool import BaseTool
 from google.adk.runners import Runner
 from google.genai import types as genai_types
 
@@ -31,15 +30,18 @@ load_dotenv()
 # Simple tool for the agent
 # ---------------------------
 
+
 def weather(city: str):
     """Get the current weather for a given city using a WeatherStation API"""
     return {
         "weather": "sunny",
     }
 
+
 def timenow():
     """Get the current time in ISO format"""
     return datetime.utcnow().isoformat() + "Z"
+
 
 async def call_agent_async(
     query: str,
@@ -64,9 +66,13 @@ async def call_agent_async(
         if event.is_final_response():
             if event.content and event.content.parts:
                 final_text = event.content.parts[0].text or final_text
-            break # If the break clause is in, after_run_callback is not invoked
+            break  # If the break clause is in, after_run_callback is not invoked
         else:
-            if event.content and event.content.parts and isinstance(event.content.parts, list):
+            if (
+                event.content
+                and event.content.parts
+                and isinstance(event.content.parts, list)
+            ):
                 event_text = ""
                 for part in event.content.parts:
                     if part.text:
@@ -101,7 +107,7 @@ async def main() -> None:
     tools = [timenow, weather]
     tool_categories = {
         "get_current_time": ["time", "readonly", "low_risk"],
-        "get_current_weather": ["readonly", "low_risk", "api"]
+        "get_current_weather": ["readonly", "low_risk", "api"],
     }
 
     agent = Agent(

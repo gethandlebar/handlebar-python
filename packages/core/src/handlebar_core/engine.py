@@ -39,6 +39,7 @@ TOTAL_DURATION_COUNTER = "__hb_totalDurationMs"
 
 logger = logging.getLogger("handlebar. " + __name__)
 
+
 @DeprecationWarning
 class GovernanceLog(TypedDict):
     tool: ToolCall
@@ -105,7 +106,10 @@ class GovernanceEngine:
         call: ToolCall,
         execution_time_ms: Optional[int],
     ) -> GovernanceDecision:
-        if (not call["tool"].get("categories") or len(call["tool"].get("categories", [])) == 0) and self.default_uncategorised == "block":
+        if (
+            not call["tool"].get("categories")
+            or len(call["tool"].get("categories", [])) == 0
+        ) and self.default_uncategorised == "block":
             return {
                 "effect": "block",
                 "code": "BLOCKED_UNCATEGORISED",
@@ -150,13 +154,19 @@ class GovernanceEngine:
                         "appliedActions": applied_rules,
                         "matchedRuleIds": [ar["ruleId"] for ar in applied_rules],
                     }
-                elif action["type"] == "allow" and (decision_effect_code is None or decision_effect_code[0] != "block"):
+                elif action["type"] == "allow" and (
+                    decision_effect_code is None or decision_effect_code[0] != "block"
+                ):
                     decision_effect_code = ("allow", "ALLOWED")
 
         final_decision: GovernanceDecision = {
             "matchedRuleIds": matching_rules,
             "appliedActions": applied_rules,
-            **({"effect": decision_effect_code[0], "code": decision_effect_code[1]} if decision_effect_code else {"effect": "allow", "code": "ALLOWED"}),
+            **(
+                {"effect": decision_effect_code[0], "code": decision_effect_code[1]}
+                if decision_effect_code
+                else {"effect": "allow", "code": "ALLOWED"}
+            ),
         }
         return final_decision
 
@@ -168,24 +178,39 @@ class GovernanceEngine:
         kind = cond["kind"]
 
         if kind == "toolName":
-            return self._eval_tool_name(cast(ToolNameCondition, cond), args["call"]["tool"]["name"])
+            return self._eval_tool_name(
+                cast(ToolNameCondition, cond), args["call"]["tool"]["name"]
+            )
 
         if kind == "toolTag":
-            return self._eval_tool_tag(cast(ToolTagCondition, cond), args["call"]["tool"].get("categories", []) or [])
+            return self._eval_tool_tag(
+                cast(ToolTagCondition, cond),
+                args["call"]["tool"].get("categories", []) or [],
+            )
 
         if kind == "executionTime":
             if args["phase"] != "post":
                 return False
-            return self._eval_execution_time(cast(ExecutionTimeCondition, cond), args["executionTimeMS"], args["ctx"])
+            return self._eval_execution_time(
+                cast(ExecutionTimeCondition, cond), args["executionTimeMS"], args["ctx"]
+            )
 
         if kind == "sequence":
-            return self._eval_sequence(cast(SequenceCondition, cond), args["ctx"]["history"], args["call"]["tool"]["name"])
+            return self._eval_sequence(
+                cast(SequenceCondition, cond),
+                args["ctx"]["history"],
+                args["call"]["tool"]["name"],
+            )
 
         if kind == "maxCalls":
-            return self._eval_max_calls(cast(MaxCallsCondition, cond), args["ctx"]["history"])
+            return self._eval_max_calls(
+                cast(MaxCallsCondition, cond), args["ctx"]["history"]
+            )
 
         if kind == "custom":
-            return self._eval_custom(cast(CustomFunctionCondition, cond), args["ctx"], args["call"])
+            return self._eval_custom(
+                cast(CustomFunctionCondition, cond), args["ctx"], args["call"]
+            )
 
         if kind == "and":
             all_conds = cast(AndCondition, cond).get("all", [])
@@ -296,7 +321,9 @@ class GovernanceEngine:
 
         return True
 
-    def _eval_max_calls(self, cond: MaxCallsCondition, history: List[ToolResult]) -> bool:
+    def _eval_max_calls(
+        self, cond: MaxCallsCondition, history: List[ToolResult]
+    ) -> bool:
         count = 0
         selector = cond["selector"]
 
@@ -314,7 +341,9 @@ class GovernanceEngine:
 
         return count >= cond["max"]
 
-    def _eval_custom(self, cond: CustomFunctionCondition, ctx: RunContext, call: ToolCall) -> bool:
+    def _eval_custom(
+        self, cond: CustomFunctionCondition, ctx: RunContext, call: ToolCall
+    ) -> bool:
         # For now, no central registry; user can still use CustomCheck.before
         return False
 
@@ -339,7 +368,9 @@ class GovernanceEngine:
         if inspect.isawaitable(res):
             await res
 
-    async def before_tool(self, ctx: RunContext, tool_name: str, args: Any) -> GovernanceDecision:
+    async def before_tool(
+        self, ctx: RunContext, tool_name: str, args: Any
+    ) -> GovernanceDecision:
         run_ctx = get_run_context()
         local_step = (run_ctx or {}).get("stepIndex", 0)
         t0 = time.perf_counter()
@@ -353,7 +384,10 @@ class GovernanceEngine:
                 emit(
                     "tool.decision",
                     {
-                        "tool": {"name": tool_name, "categories": tool.get("categories")},
+                        "tool": {
+                            "name": tool_name,
+                            "categories": tool.get("categories"),
+                        },
                         "effect": d["effect"],
                         "code": d.get("code"),
                         "reason": d.get("reason"),
@@ -394,16 +428,19 @@ class GovernanceEngine:
 
         return final_decision
 
-    def _finalise_decision(self, ctx: RunContext, call: ToolCall, decision: GovernanceDecision) -> GovernanceDecision:
+    def _finalise_decision(
+        self, ctx: RunContext, call: ToolCall, decision: GovernanceDecision
+    ) -> GovernanceDecision:
         if self.verbose:
             tag = "✅" if decision["effect"] == "allow" else "⛔"
             last_rule_id = None
             actions = decision.get("appliedActions") or []
             if actions:
                 last_rule_id = actions[-1].get("ruleId")
-            reason = decision.get("reason")
 
-        self.governance_log.append({"tool": call, "decision": decision, "when": "before"})
+        self.governance_log.append(
+            {"tool": call, "decision": decision, "when": "before"}
+        )
         return decision
 
     async def after_tool(
@@ -417,7 +454,6 @@ class GovernanceEngine:
     ) -> None:
         run_ctx = get_run_context()
         local_step = (run_ctx or {}).get("stepIndex", 0)
-        decision_id = (run_ctx or {}).get("decisionId")
 
         tool = self.get_tool(tool_name)
 
@@ -432,26 +468,39 @@ class GovernanceEngine:
         ctx["stepIndex"] = int(ctx.get("stepIndex", 0)) + 1
 
         if execution_time_ms is not None:
-            ctx["counters"][TOTAL_DURATION_COUNTER] = int(ctx["counters"].get(TOTAL_DURATION_COUNTER, 0)) + int(execution_time_ms)
+            ctx["counters"][TOTAL_DURATION_COUNTER] = int(
+                ctx["counters"].get(TOTAL_DURATION_COUNTER, 0)
+            ) + int(execution_time_ms)
 
         for check in self.checks:
             await self._run_after_check(check, ctx, tr)
 
-        post_decision = self._decide_by_rules("post", ctx, {"tool": tool, "args": args}, execution_time_ms)
+        post_decision = self._decide_by_rules(
+            "post", ctx, {"tool": tool, "args": args}, execution_time_ms
+        )
         if post_decision["effect"] == "block" and self.verbose:
-            logger.warning('[Handlebar] ⛔ post-tool rule would block "%s" (not enforced yet).', tool_name)
-
+            logger.warning(
+                '[Handlebar] ⛔ post-tool rule would block "%s" (not enforced yet).',
+                tool_name,
+            )
 
         error_exc = error if isinstance(error, BaseException) else None
         emit_data = {
             "tool": {"name": tool_name, "categories": tool.get("categories", [])},
             "outcome": "error" if error is not None else "success",
-            **({"durationMs": execution_time_ms} if execution_time_ms is not None else {}),
+            **(
+                {"durationMs": execution_time_ms}
+                if execution_time_ms is not None
+                else {}
+            ),
             "counters": {**ctx.get("counters", {})},
         }
 
         if error_exc:
-            emit_data["error"] = {"name": type(error_exc).__name__, "message": str(error_exc)}
+            emit_data["error"] = {
+                "name": type(error_exc).__name__,
+                "message": str(error_exc),
+            }
 
         emit(
             "tool.result",

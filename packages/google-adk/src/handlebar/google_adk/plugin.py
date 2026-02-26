@@ -129,7 +129,7 @@ class HandlebarPlugin(BasePlugin):
             if self._client is not None:  # double-checked locking
                 return self._client
             cfg = HandlebarClientConfig(
-                agent=self._agent_descriptor,  # type: ignore[arg-type]
+                agent=self._agent_descriptor,
                 api_key=self._api_key,
                 api_endpoint=self._api_endpoint,
                 enforce_mode=self._enforce_mode,
@@ -147,6 +147,7 @@ class HandlebarPlugin(BasePlugin):
     async def before_agent_callback(self, *, agent, callback_context) -> None:
         """Start a Handlebar run for this ADK invocation."""
         inv_id = callback_context.invocation_id
+        logger.debug("[Handlebar] before_agent_callback invocation_id=%s", inv_id)
         if inv_id in self._states:
             # Nested/sub-agent within the same invocation — reuse the run.
             return None
@@ -159,6 +160,7 @@ class HandlebarPlugin(BasePlugin):
     async def after_agent_callback(self, *, agent, callback_context, result=None) -> None:
         """End the Handlebar run, flushing all pending audit events."""
         inv_id = callback_context.invocation_id
+        logger.debug("[Handlebar] after_agent_callback invocation_id=%s", inv_id)
         state = self._states.pop(inv_id, None)
         if state is None:
             return None

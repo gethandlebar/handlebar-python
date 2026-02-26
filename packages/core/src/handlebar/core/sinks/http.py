@@ -83,18 +83,19 @@ class HttpSink(Sink):
 
     async def drain(self) -> None:
         """Flush the queue and wait up to ``flush_timeout_s``."""
+        loop = asyncio.get_event_loop()
         done = asyncio.Event()
 
         def _flush_and_signal() -> None:
             self._flush_sync()
-            done.set()
+            loop.call_soon_threadsafe(done.set)
 
         t = threading.Thread(target=_flush_and_signal, daemon=True)
         t.start()
         try:
             await asyncio.wait_for(done.wait(), timeout=self._flush_timeout_s)
         except asyncio.TimeoutError:
-            pass
+            logger.warning("[Handlebar] HttpSink: drain timed out after %.1fs", self._flush_timeout_s)
 
     async def close(self) -> None:
         with self._lock:
@@ -125,6 +126,7 @@ class HttpSink(Sink):
                 return
             snapshot = self._queue[:]
             self._queue.clear()
+        logger.debug("[Handlebar] HttpSink: flushing %d events", len(snapshot))
 
         # Group by agent_id.
         by_agent: dict[str, list[Any]] = {}
@@ -181,7 +183,8 @@ class HttpSink(Sink):
                     return
                 if 400 <= resp.status_code < 500:
                     logger.error(
-                        "[Handlebar] HttpSink: non-retryable %s from %s", resp.status_code, url
+                        "[Handlebar] HttpSink: non-retryable %s from %s: %s",
+                        resp.status_code, url, resp.text,
                     )
                     return
                 raise Exception(f"HTTP {resp.status_code}")

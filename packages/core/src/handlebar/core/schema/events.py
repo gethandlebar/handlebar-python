@@ -17,14 +17,15 @@ class _Base(BaseModel):
 # Shared envelope fields
 # ---------------------------------------------------------------------------
 
+# TODO: reallow None options when the zod data schemas have been made nullish
 
 class _EventEnvelope(_Base):
     schema_version: str = Field("handlebar.audit.v1", alias="schema")
     ts: datetime
     run_id: str
-    session_id: str | None = None
-    actor_external_id: str | None = None
-    step_index: int | None = None
+    session_id: str = ""
+    actor_external_id: str = ""
+    step_index: int = 0
 
 
 # ---------------------------------------------------------------------------
@@ -33,12 +34,12 @@ class _EventEnvelope(_Base):
 
 
 class _RunStartedAgent(_Base):
-    id: str | None = None
+    id: str = ""
 
 
 class _RunStartedActor(_Base):
     external_id: str
-    metadata: dict[str, str] | None = None
+    metadata: dict[str, str] = {}
 
 
 class _RunStartedAdapter(_Base):
@@ -109,8 +110,8 @@ class _ToolResultError(_Base):
 class _ToolResultData(_Base):
     tool: _ToolInfo
     outcome: Literal["success", "error"]
-    duration_ms: float | None = None
-    error: _ToolResultError | None = None
+    duration_ms: float = 0.0
+    # error: _ToolResultError | None = None
 
 
 class ToolResultEvent(_EventEnvelope):

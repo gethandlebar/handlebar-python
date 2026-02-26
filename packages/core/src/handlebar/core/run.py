@@ -441,33 +441,33 @@ class Run:
             "kind": kind,
             "ts": datetime.now(timezone.utc).isoformat(),
             "runId": self.run_id,
-            "sessionId": self.session_id,
-            "actorExternalId": self.actor.external_id if self.actor else None,
+            "sessionId": self.session_id or "",
+            "actorExternalId": self.actor.external_id if self.actor else "", # TODO: set to None once nullables allowed
             "stepIndex": self._step_index,
             "data": data,
         }
+
         # Build validated event and pass to bus using the module-level cached adapter.
         try:
             event = _audit_event_adapter.validate_python(event_dict)
-            self._bus.emit(self._agent_id, event)  # type: ignore[arg-type]
+            self._bus.emit(self._agent_id, event)
+            logger.debug("[Handlebar] Emitted event %s (run=%s)", kind, self.run_id)
         except Exception as exc:
-            logger.debug("[Handlebar] Failed to emit event %s: %s", kind, exc)
+            logger.warning("[Handlebar] Failed to build/emit event %s: %s", kind, exc)
 
     def _emit_run_started(self) -> None:
+        data = {
+            "agent": {"id": self._agent_id or None},
+            "adapter": {"name": "core"},
+        }
+        if self.actor and self.actor.external_id:
+            data["actor"] = {
+                "externalId": self.actor.external_id,
+                "metadata": self.actor.metadata or {},
+            }
         self._emit_event(
             kind="run.started",
-            data={
-                "agent": {"id": self._agent_id or None},
-                "actor": (
-                    {
-                        "externalId": self.actor.external_id,
-                        "metadata": self.actor.metadata,
-                    }
-                    if self.actor
-                    else None
-                ),
-                "adapter": {"name": "core"},
-            },
+            data=data,
         )
 
     def _emit_tool_decision(
@@ -478,11 +478,11 @@ class Run:
             data={
                 "verdict": decision.verdict.value,
                 "control": decision.control.value,
-                "cause": decision.cause.model_dump(by_alias=True),  # type: ignore[union-attr]
+                "cause": decision.cause.model_dump(by_alias=True),
                 "message": decision.message,
                 "evaluatedRules": [r.model_dump(by_alias=True) for r in decision.evaluated_rules],
-                "finalRuleId": decision.final_rule_id,
-                "tool": {"name": tool_name, "categories": tool_tags},
+                "finalRuleId": decision.final_rule_id or "", # TODO: nulls vs undefineds in JS.
+                "tool": {"name": tool_name, "categories": tool_tags or []},
             },
         )
 
@@ -499,10 +499,11 @@ class Run:
         self._emit_event(
             kind="tool.result",
             data={
-                "tool": {"name": tool_name, "categories": tool_tags},
+                "tool": {"name": tool_name, "categories": tool_tags or []},
                 "outcome": "error" if error else "success",
-                "durationMs": duration_ms,
-                "error": error_data,
+                "durationMs": duration_ms or 0,
+                # TODO: reimplement when None data is allowed
+                #"error": error_data or "",
             },
         )
 

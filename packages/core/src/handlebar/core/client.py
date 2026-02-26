@@ -8,7 +8,7 @@ from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any
 
 from ._sync import run_sync
-from .api.manager import ApiManager, DEFAULT_ENDPOINT
+from .api.manager import ApiManager, resolve_api_endpoint
 from .metrics.hooks import AgentMetricHookRegistry
 from .metrics.types import AgentMetricHook
 from .run import Run, RunInternalConfig
@@ -220,7 +220,7 @@ class HandlebarClient:
 
     async def _init_sinks(self, sinks: list[SinkConfig] | None) -> None:
         if not sinks:
-            endpoint = self._config.api_endpoint or DEFAULT_ENDPOINT
+            endpoint = resolve_api_endpoint(self._config.api_endpoint)
             api_key = (
                 self._config.api_key or os.environ.get("HANDLEBAR_API_KEY")
             )
@@ -230,11 +230,7 @@ class HandlebarClient:
                 if sink_cfg.type == "console":
                     self._bus.add(create_console_sink(sink_cfg.format))  # type: ignore[arg-type]
                 elif sink_cfg.type == "http":
-                    endpoint = (
-                        getattr(sink_cfg, "endpoint", None)
-                        or self._config.api_endpoint
-                        or DEFAULT_ENDPOINT
-                    )
+                    endpoint = resolve_api_endpoint(getattr(sink_cfg, "endpoint", None) or self._config.api_endpoint)
                     api_key = (
                         getattr(sink_cfg, "api_key", None)
                         or self._config.api_key

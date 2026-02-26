@@ -65,6 +65,9 @@ class EvaluateAfterRequest(_BaseEvaluateRequest):
 
 EvaluateRequest = EvaluateBeforeRequest | EvaluateAfterRequest
 
+def resolve_api_endpoint(endpoint: str | None) -> str:
+    return endpoint or os.environ.get("HANDLEBAR_API_ENDPOINT") or DEFAULT_ENDPOINT
+
 
 class ApiManager:
     """Communicates with the Handlebar API."""
@@ -76,11 +79,7 @@ class ApiManager:
         fail_closed: bool = False,
         _retry_base_ms: int = _RETRY_DEFAULTS["base_ms"],
     ) -> None:
-        self._endpoint = (
-            api_endpoint
-            or os.environ.get("HANDLEBAR_API_ENDPOINT")
-            or DEFAULT_ENDPOINT
-        ).rstrip("/")
+        self._endpoint = resolve_api_endpoint(api_endpoint).rstrip("/")
         self._api_key = api_key or os.environ.get("HANDLEBAR_API_KEY")
         self._fail_closed = fail_closed
         self._retry_base_ms = _retry_base_ms

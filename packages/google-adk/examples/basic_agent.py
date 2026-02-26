@@ -21,7 +21,7 @@ from google.adk.sessions import InMemorySessionService
 from google.adk.runners import Runner
 from google.genai import types as genai_types
 
-from handlebar_google_adk import HandlebarRunner
+from handlebar.google_adk import HandlebarRunner
 
 
 load_dotenv()

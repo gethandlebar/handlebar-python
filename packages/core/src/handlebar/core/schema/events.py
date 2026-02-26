@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Annotated, Any, Literal, Union
+from typing import Annotated, Any, Literal, Union, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
@@ -17,14 +17,12 @@ class _Base(BaseModel):
 # Shared envelope fields
 # ---------------------------------------------------------------------------
 
-# TODO: reallow None options when the zod data schemas have been made nullish
-
 class _EventEnvelope(_Base):
     schema_version: str = Field("handlebar.audit.v1", alias="schema")
     ts: datetime
     run_id: str
-    session_id: str = ""
-    actor_external_id: str = ""
+    session_id: str | None = None
+    actor_external_id: str | None = None
     step_index: int = 0
 
 
@@ -39,7 +37,7 @@ class _RunStartedAgent(_Base):
 
 class _RunStartedActor(_Base):
     external_id: str
-    metadata: dict[str, str] = {}
+    metadata: dict[str, str] | None = None
 
 
 class _RunStartedAdapter(_Base):
@@ -48,8 +46,8 @@ class _RunStartedAdapter(_Base):
 
 class _RunStartedData(_Base):
     agent: _RunStartedAgent | None = None
-    actor: _RunStartedActor | None = None
     adapter: _RunStartedAdapter | None = None
+    actor: _RunStartedActor | None = None
 
 
 class RunStartedEvent(_EventEnvelope):
@@ -110,8 +108,8 @@ class _ToolResultError(_Base):
 class _ToolResultData(_Base):
     tool: _ToolInfo
     outcome: Literal["success", "error"]
-    duration_ms: float = 0.0
-    # error: _ToolResultError | None = None
+    duration_ms: float | None = None
+    error: _ToolResultError | None = None
 
 
 class ToolResultEvent(_EventEnvelope):

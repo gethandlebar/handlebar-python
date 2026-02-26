@@ -165,7 +165,7 @@ class HttpSink(Sink):
         events_payload = []
         for e in events:
             try:
-                events_payload.append(e.model_dump(by_alias=True, mode="json"))
+                events_payload.append(e.model_dump(by_alias=True, mode="json", exclude_none=True))
             except Exception:
                 events_payload.append(str(e))
 

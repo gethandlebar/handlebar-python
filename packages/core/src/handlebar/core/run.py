@@ -441,8 +441,8 @@ class Run:
             "kind": kind,
             "ts": datetime.now(timezone.utc).isoformat(),
             "runId": self.run_id,
-            "sessionId": self.session_id or "",
-            "actorExternalId": self.actor.external_id if self.actor else "", # TODO: set to None once nullables allowed
+            "sessionId": self.session_id,
+            "actorExternalId": self.actor.external_id if self.actor else None,
             "stepIndex": self._step_index,
             "data": data,
         }
@@ -456,18 +456,16 @@ class Run:
             logger.warning("[Handlebar] Failed to build/emit event %s: %s", kind, exc)
 
     def _emit_run_started(self) -> None:
-        data = {
-            "agent": {"id": self._agent_id or None},
-            "adapter": {"name": "core"},
-        }
-        if self.actor and self.actor.external_id:
-            data["actor"] = {
-                "externalId": self.actor.external_id,
-                "metadata": self.actor.metadata or {},
-            }
         self._emit_event(
             kind="run.started",
-            data=data,
+            data={
+                "agent": {"id": self._agent_id or None},
+                "adapter": {"name": "core"},
+                "actor": {
+                    "externalId": self.actor.external_id,
+                    "metadata": self.actor.metadata or {},
+                } if self.actor else None
+            },
         )
 
     def _emit_tool_decision(
@@ -481,7 +479,7 @@ class Run:
                 "cause": decision.cause.model_dump(by_alias=True),
                 "message": decision.message,
                 "evaluatedRules": [r.model_dump(by_alias=True) for r in decision.evaluated_rules],
-                "finalRuleId": decision.final_rule_id or "", # TODO: nulls vs undefineds in JS.
+                "finalRuleId": decision.final_rule_id or None,
                 "tool": {"name": tool_name, "categories": tool_tags or []},
             },
         )
@@ -502,8 +500,7 @@ class Run:
                 "tool": {"name": tool_name, "categories": tool_tags or []},
                 "outcome": "error" if error else "success",
                 "durationMs": duration_ms or 0,
-                # TODO: reimplement when None data is allowed
-                #"error": error_data or "",
+                "error": error_data or None,
             },
         )
 

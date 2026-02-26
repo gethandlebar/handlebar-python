@@ -34,10 +34,10 @@ so you can guarantee they don't violate your team's policies.
 
 You will need:
 
-- an agent...
-- Wrap your agent with a Handlebar client
-- Connect to the [Handlebar platform][platform]
-- Configure policies to enforce on your agent
+- an agent (python `>= 3.11`)
+- to wrap your agent with a Handlebar client
+- connect to the [Handlebar platform][platform]
+- configure policies to enforce on your agent
 
 ### Wrap your agent with Handlebar
 
@@ -75,10 +75,20 @@ npx skills add gethandlebar/agent-skills
 Go to the [skill repository](https://github.com/gethandlebar/agent-skills)
 for full instructions.
 
+## Developing
+
+This repo uses [`mise`][mise] for command utilities
+
+```bash
+mise r format # Formats code
+mise r ci # Lints, checks types, runs tests
+```
+
 ## Get in touch
 
 Please [open an issue](https://github.com/gethandlebar/handlebar-python/issues/new) if you have any feedback, suggestions, or requests for framework support.
 Alternatively, [book a call][calendar] to talk to us about how Handlebar could help to protect your team's agents.
+
 
 ## License
 
@@ -89,3 +99,4 @@ are currently licensed under Apache 2.0 [`LICENSE`](./LICENSE).
 [platform]: https://app.gethandlebar.com
 [calendar]: https://calendly.com/arjun-handlebar/30min
 [docs]: https://handlebar.mintlify.app
+[mise]: https://mise.jdx.dev/

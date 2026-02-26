@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal
 
-from .schema.enduser import EndUserConfig, EndUserGroupConfig
+from .schema.enduser import EndUserConfig
 from .schema.governance import Decision, DecisionCause, RuleEval, RunControl, Verdict
 
 if TYPE_CHECKING:

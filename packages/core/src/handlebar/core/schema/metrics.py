@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 
-class InbuiltAgentMetricKind(str, Enum):
+class InbuiltAgentMetricKind(StrEnum):
     BYTES_IN = "bytes_in"
     BYTES_OUT = "bytes_out"
     RECORDS_OUT = "records_out"

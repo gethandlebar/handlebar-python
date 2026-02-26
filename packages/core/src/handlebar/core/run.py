@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 from pydantic import TypeAdapter
@@ -22,7 +22,6 @@ from .types import (
     Actor,
     LLMMessage,
     LLMResponse,
-    ModelInfo,
     RunConfig,
     RunEndStatus,
     Tool,
@@ -102,7 +101,9 @@ class Run:
         if ttl is not None and ttl > 0:
             try:
                 loop = asyncio.get_running_loop()
-                self._ttl_task = loop.call_later(ttl / 1000, lambda: asyncio.ensure_future(self.end("timeout")))
+                self._ttl_task = loop.call_later(
+                    ttl / 1000, lambda: asyncio.ensure_future(self.end("timeout"))
+                )
             except RuntimeError:
                 pass  # No running loop at construction time; TTL not supported in sync mode.
 
@@ -286,11 +287,7 @@ class Run:
         from uuid6 import uuid7
 
         for msg in messages:
-            content_str = (
-                msg.content
-                if isinstance(msg.content, str)
-                else json.dumps(msg.content)
-            )
+            content_str = msg.content if isinstance(msg.content, str) else json.dumps(msg.content)
             self._emit_event(
                 kind="message.raw.created",
                 data={
@@ -439,7 +436,7 @@ class Run:
         event_dict = {
             "schema": "handlebar.audit.v1",
             "kind": kind,
-            "ts": datetime.now(timezone.utc).isoformat(),
+            "ts": datetime.now(UTC).isoformat(),
             "runId": self.run_id,
             "sessionId": self.session_id,
             "actorExternalId": self.actor.external_id if self.actor else None,
@@ -464,7 +461,9 @@ class Run:
                 "actor": {
                     "externalId": self.actor.external_id,
                     "metadata": self.actor.metadata or {},
-                } if self.actor else None
+                }
+                if self.actor
+                else None,
             },
         )
 

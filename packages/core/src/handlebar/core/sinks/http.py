@@ -29,7 +29,7 @@ _DEFAULTS = {
 class _QueuedEvent:
     __slots__ = ("agent_id", "event")
 
-    def __init__(self, agent_id: str, event: "AuditEvent") -> None:
+    def __init__(self, agent_id: str, event: AuditEvent) -> None:
         self.agent_id = agent_id
         self.event = event
 
@@ -72,7 +72,7 @@ class HttpSink(Sink):
     async def init(self) -> None:
         self._schedule()
 
-    def write_batch(self, agent_id: str, events: list["AuditEvent"]) -> None:
+    def write_batch(self, agent_id: str, events: list[AuditEvent]) -> None:
         with self._lock:
             for event in events:
                 if self._closed:
@@ -94,8 +94,10 @@ class HttpSink(Sink):
         t.start()
         try:
             await asyncio.wait_for(done.wait(), timeout=self._flush_timeout_s)
-        except asyncio.TimeoutError:
-            logger.warning("[Handlebar] HttpSink: drain timed out after %.1fs", self._flush_timeout_s)
+        except TimeoutError:
+            logger.warning(
+                "[Handlebar] HttpSink: drain timed out after %.1fs", self._flush_timeout_s
+            )
 
     async def close(self) -> None:
         with self._lock:
@@ -133,8 +135,6 @@ class HttpSink(Sink):
         for item in snapshot:
             by_agent.setdefault(item.agent_id, []).append(item.event)
 
-        import httpx
-
         headers: dict[str, str] = {"content-type": "application/json"}
         if self._api_key:
             headers["Authorization"] = f"Bearer {self._api_key}"
@@ -158,8 +158,9 @@ class HttpSink(Sink):
         agent_id: str,
         events: list[Any],
     ) -> None:
-        import httpx
         import json
+
+        import httpx
 
         # Serialise events using Pydantic's JSON encoder (camelCase aliases).
         events_payload = []
@@ -184,7 +185,9 @@ class HttpSink(Sink):
                 if 400 <= resp.status_code < 500:
                     logger.error(
                         "[Handlebar] HttpSink: non-retryable %s from %s: %s",
-                        resp.status_code, url, resp.text,
+                        resp.status_code,
+                        url,
+                        resp.text,
                     )
                     return
                 raise Exception(f"HTTP {resp.status_code}")

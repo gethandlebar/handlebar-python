@@ -9,6 +9,7 @@ Environment variables:
     HANDLEBAR_API_KEY   Your Handlebar API key (required for governance / audit)
     OPENAI_API_KEY      Your OpenAI API key (required for the LLM) - yes, this demo uses OpenAI on a Google agent. sue me.
 """
+
 import os
 from typing import List
 
@@ -29,6 +30,7 @@ load_dotenv()
 # ---------------------------------------------------------------------------
 # Tools
 # ---------------------------------------------------------------------------
+
 
 def get_current_time(timezone: str = "UTC") -> dict:
     """Return the current date and time for a given timezone name.
@@ -142,7 +144,11 @@ async def main() -> None:
             new_message=content,
         ):
             if event.is_final_response():
-                text = event.content.parts[0].text if event.content and event.content.parts else "(no response)"
+                text = (
+                    event.content.parts[0].text
+                    if event.content and event.content.parts
+                    else "(no response)"
+                )
                 print(f"Agent: {text}")
 
 

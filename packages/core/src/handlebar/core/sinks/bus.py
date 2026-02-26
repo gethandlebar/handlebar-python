@@ -31,7 +31,7 @@ class SinkBus:
     async def init(self) -> None:
         await asyncio.gather(*(s.init() for s in self._sinks), return_exceptions=True)
 
-    def emit(self, agent_id: str, event: "AuditEvent") -> None:
+    def emit(self, agent_id: str, event: AuditEvent) -> None:
         """Fire-and-forget emit — safe to call from sync or async code."""
         if self._closed:
             return

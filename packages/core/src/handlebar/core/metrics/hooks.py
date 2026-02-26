@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-from typing import Callable
+from collections.abc import Callable
 
 from .types import (
     AgentMetricHook,
@@ -58,7 +58,7 @@ class AgentMetricHookRegistry:
             if hook.timeout_ms is not None:
                 try:
                     result = await asyncio.wait_for(coro, timeout=hook.timeout_ms / 1000)
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     result = None
             else:
                 result = await coro
@@ -67,9 +67,7 @@ class AgentMetricHookRegistry:
                 if hook.blocking is False:
                     # Fire-and-forget: schedule emission without blocking.
                     asyncio.get_event_loop().call_soon(
-                        lambda r=result, k=hook_key: on_metric(k, r.value, r.unit)
-                        if r
-                        else None
+                        lambda r=result, k=hook_key: on_metric(k, r.value, r.unit) if r else None
                     )
                 else:
                     on_metric(hook_key, result.value, result.unit)

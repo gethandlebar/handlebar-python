@@ -5,25 +5,26 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from dataclasses import dataclass, field
-from typing import Any, Optional
+from dataclasses import dataclass
+from typing import Any
 
 from google.adk.models import LlmRequest, LlmResponse
 from google.adk.plugins.base_plugin import BasePlugin
-
 from handlebar.core import (
     AgentDescriptor,
     EnforceMode,
     HandlebarClient,
     HandlebarClientConfig,
     LLMMessage,
-    LLMResponse as HBLLMResponse,
     ModelInfo,
     Run,
     RunConfig,
     SinkConfig,
     TokenUsage,
     Tool,
+)
+from handlebar.core import (
+    LLMResponse as HBLLMResponse,
 )
 from handlebar.core.schema.governance import RunControl, Verdict
 
@@ -94,8 +95,7 @@ class HandlebarPlugin(BasePlugin):
     ) -> None:
         if client is None and agent_slug is None and agent is None:
             raise ValueError(
-                "HandlebarPlugin requires at least one of: "
-                "`client`, `agent_slug`, or `agent`."
+                "HandlebarPlugin requires at least one of: `client`, `agent_slug`, or `agent`."
             )
 
         super().__init__(name="handlebar")
@@ -104,8 +104,8 @@ class HandlebarPlugin(BasePlugin):
         self._init_lock = asyncio.Lock()
 
         # Config stored for lazy client creation.
-        self._agent_descriptor: AgentDescriptor | None = (
-            agent or (AgentDescriptor(slug=agent_slug) if agent_slug else None)
+        self._agent_descriptor: AgentDescriptor | None = agent or (
+            AgentDescriptor(slug=agent_slug) if agent_slug else None
         )
         self._api_key = api_key
         self._api_endpoint = api_endpoint
@@ -175,7 +175,7 @@ class HandlebarPlugin(BasePlugin):
 
     async def before_model_callback(
         self, *, callback_context, llm_request: LlmRequest
-    ) -> Optional[LlmResponse]:
+    ) -> LlmResponse | None:
         """Gate the LLM call.
 
         If a prior tool was blocked with ``TERMINATE`` control, returns a
@@ -202,9 +202,7 @@ class HandlebarPlugin(BasePlugin):
         await state.run.before_llm(messages)
         return None
 
-    async def after_model_callback(
-        self, *, callback_context, llm_response: LlmResponse
-    ) -> None:
+    async def after_model_callback(self, *, callback_context, llm_response: LlmResponse) -> None:
         """Record LLM token usage and response in the audit log."""
         inv_id = callback_context.invocation_id
         state = self._states.get(inv_id)
@@ -212,9 +210,7 @@ class HandlebarPlugin(BasePlugin):
             return None
 
         duration_ms = time.monotonic() * 1000 - state.model_start_ms
-        hb_response = _adk_response_to_llm_response(
-            llm_response, state.current_model, duration_ms
-        )
+        hb_response = _adk_response_to_llm_response(llm_response, state.current_model, duration_ms)
         await state.run.after_llm(hb_response)
         return None
 
@@ -228,7 +224,7 @@ class HandlebarPlugin(BasePlugin):
         tool,
         tool_args: dict[str, Any],
         tool_context,
-    ) -> Optional[dict]:
+    ) -> dict | None:
         """Evaluate the tool call against governance rules.
 
         Returns a dict to use as the tool result (bypassing real execution)
@@ -240,8 +236,8 @@ class HandlebarPlugin(BasePlugin):
             return None
 
         # Extract tags stored by the developer in tool.custom_metadata.
-        tool_tags: list[str] | None = (
-            (getattr(tool, "custom_metadata", None) or {}).get("handlebar_tags")
+        tool_tags: list[str] | None = (getattr(tool, "custom_metadata", None) or {}).get(
+            "handlebar_tags"
         )
 
         decision = await state.run.before_tool(
@@ -254,11 +250,7 @@ class HandlebarPlugin(BasePlugin):
             if decision.control == RunControl.TERMINATE:
                 # Signal before_model_callback to stop the agent loop.
                 state.terminate_status = "interrupted"
-            return {
-                "error": (
-                    f"Blocked by Handlebar governance: {decision.message}"
-                )
-            }
+            return {"error": (f"Blocked by Handlebar governance: {decision.message}")}
 
         return None
 
@@ -276,8 +268,8 @@ class HandlebarPlugin(BasePlugin):
         if state is None:
             return None
 
-        tool_tags: list[str] | None = (
-            (getattr(tool, "custom_metadata", None) or {}).get("handlebar_tags")
+        tool_tags: list[str] | None = (getattr(tool, "custom_metadata", None) or {}).get(
+            "handlebar_tags"
         )
 
         await state.run.after_tool(
@@ -339,9 +331,7 @@ def _adk_response_to_llm_response(
             response_parts.append({"type": "text", "text": text})
         fc = getattr(part, "function_call", None)
         if fc:
-            response_parts.append(
-                {"type": "tool_call", "toolName": fc.name, "input": fc.args}
-            )
+            response_parts.append({"type": "tool_call", "toolName": fc.name, "input": fc.args})
 
     usage: TokenUsage | None = None
     usage_meta = getattr(adk_response, "usage_metadata", None)

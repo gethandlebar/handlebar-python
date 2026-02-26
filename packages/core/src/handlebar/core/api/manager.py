@@ -65,6 +65,7 @@ class EvaluateAfterRequest(_BaseEvaluateRequest):
 
 EvaluateRequest = EvaluateBeforeRequest | EvaluateAfterRequest
 
+
 def resolve_api_endpoint(endpoint: str | None) -> str:
     return endpoint or os.environ.get("HANDLEBAR_API_ENDPOINT") or DEFAULT_ENDPOINT
 
@@ -114,8 +115,7 @@ class ApiManager:
             body["tags"] = tags
         if tools:
             body["tools"] = [
-                {"name": t.name, "description": t.description, "tags": t.tags}
-                for t in tools
+                {"name": t.name, "description": t.description, "tags": t.tags} for t in tools
             ]
 
         try:
@@ -168,7 +168,10 @@ class ApiManager:
         if session_id:
             body["sessionId"] = session_id
         if actor:
-            body["actor"] = {"externalId": actor.external_id, **({"metadata": actor.metadata} if actor.metadata else {})}
+            body["actor"] = {
+                "externalId": actor.external_id,
+                **({"metadata": actor.metadata} if actor.metadata else {}),
+            }
         if model:
             body["model"] = model.to_dict()
 
@@ -190,9 +193,7 @@ class ApiManager:
             logger.error("[Handlebar] Run start error: %s", exc)
             return LockdownStatus(active=False)
 
-    async def end_run(
-        self, run_id: str, agent_id: str | None, status: RunEndStatus
-    ) -> None:
+    async def end_run(self, run_id: str, agent_id: str | None, status: RunEndStatus) -> None:
         if not self._active or agent_id is None:
             return
 
@@ -285,7 +286,7 @@ class ApiManager:
                 if resp.is_success or (400 <= resp.status_code < 500):
                     return resp
                 raise Exception(f"HTTP {resp.status_code}")
-            except Exception as exc:
+            except Exception:
                 if attempt >= max_retries:
                     raise
                 backoff_s = min(base_ms * (2**attempt), cap_ms) / 1000

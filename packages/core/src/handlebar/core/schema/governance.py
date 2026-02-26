@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from enum import Enum
-from typing import Annotated, Literal, Union
+from enum import StrEnum
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
@@ -18,12 +18,12 @@ class _Base(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class Verdict(str, Enum):
+class Verdict(StrEnum):
     ALLOW = "ALLOW"
     BLOCK = "BLOCK"
 
 
-class RunControl(str, Enum):
+class RunControl(StrEnum):
     CONTINUE = "CONTINUE"
     TERMINATE = "TERMINATE"
 
@@ -54,7 +54,7 @@ class LockdownCause(_Base):
 
 
 DecisionCause = Annotated[
-    Union[AllowCause, RuleViolationCause, HitlPendingCause, LockdownCause],
+    AllowCause | RuleViolationCause | HitlPendingCause | LockdownCause,
     Field(discriminator="kind"),
 ]
 

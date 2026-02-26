@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Annotated, Any, Literal, Union, Optional
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
@@ -16,6 +16,7 @@ class _Base(BaseModel):
 # ---------------------------------------------------------------------------
 # Shared envelope fields
 # ---------------------------------------------------------------------------
+
 
 class _EventEnvelope(_Base):
     schema_version: str = Field("handlebar.audit.v1", alias="schema")
@@ -170,13 +171,11 @@ class MessageRawCreatedEvent(_EventEnvelope):
 # ---------------------------------------------------------------------------
 
 AuditEvent = Annotated[
-    Union[
-        RunStartedEvent,
-        RunEndedEvent,
-        ToolDecisionEvent,
-        ToolResultEvent,
-        LlmResultEvent,
-        MessageRawCreatedEvent,
-    ],
+    RunStartedEvent
+    | RunEndedEvent
+    | ToolDecisionEvent
+    | ToolResultEvent
+    | LlmResultEvent
+    | MessageRawCreatedEvent,
     Field(discriminator="kind"),
 ]

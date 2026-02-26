@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Literal
+from collections.abc import Awaitable, Callable
+from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
     from ..run import Run
@@ -17,7 +18,7 @@ class MetricInfo:
 
 
 class AgentMetricInputToolBefore:
-    def __init__(self, tool_name: str, args: Any, run: "Run") -> None:
+    def __init__(self, tool_name: str, args: Any, run: Run) -> None:
         self.tool_name = tool_name
         self.args = args
         self.run = run
@@ -28,7 +29,7 @@ class AgentMetricInputToolAfter:
         self,
         tool_name: str,
         args: Any,
-        run: "Run",
+        run: Run,
         result: Any = None,
         error: Any = None,
     ) -> None:

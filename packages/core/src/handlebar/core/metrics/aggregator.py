@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+from ..schema.metrics import InbuiltAgentMetricKind
 from .types import MetricInfo
 from .utils import validate_metric, validate_metric_key
-from ..schema.metrics import InbuiltAgentMetricKind
 
 
 class AgentMetricCollector:
@@ -20,10 +20,14 @@ class AgentMetricCollector:
     # Inbuilt metrics
     # ------------------------------------------------------------------
 
-    def set_inbuilt(self, kind: InbuiltAgentMetricKind, value: float, unit: str | None = None) -> None:
+    def set_inbuilt(
+        self, kind: InbuiltAgentMetricKind, value: float, unit: str | None = None
+    ) -> None:
         self._inbuilt[kind.value] = MetricInfo(value, unit)
 
-    def add_inbuilt(self, kind: InbuiltAgentMetricKind, delta: float, unit: str | None = None) -> None:
+    def add_inbuilt(
+        self, kind: InbuiltAgentMetricKind, delta: float, unit: str | None = None
+    ) -> None:
         prev = self._inbuilt.get(kind.value)
         prev_value = prev.value if prev else 0.0
         self._inbuilt[kind.value] = MetricInfo(
@@ -82,9 +86,7 @@ class AgentMetricCollector:
         self._inbuilt = {}
         self._custom = {}
 
-    def to_event_payload(
-        self, *, aggregate: bool = False
-    ) -> dict[str, dict[str, dict]] | None:
+    def to_event_payload(self, *, aggregate: bool = False) -> dict[str, dict[str, dict]] | None:
         """Return current metrics as a dict payload suitable for an audit event."""
         inbuilt_entries = {k: v for k, v in self._inbuilt.items() if validate_metric(v)}
         custom_entries = {k: v for k, v in self._custom.items() if validate_metric(v)}

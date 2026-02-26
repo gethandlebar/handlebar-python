@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Callable
+from collections.abc import Awaitable, Callable
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from .run import Run
@@ -56,14 +57,13 @@ class SubjectRegistry:
         tool: Any,
         tool_name: str,
         tool_args: Any,
-        run: "Run",
+        run: Run,
     ) -> list[SubjectRef]:
         extractor = self._by_tool_name.get(tool_name)
         if extractor is None:
             return []
 
         try:
-            import asyncio
             import inspect
 
             ctx = {"tool": tool, "toolName": tool_name, "toolArgs": tool_args, "run": run}

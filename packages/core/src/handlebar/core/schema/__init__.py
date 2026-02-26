@@ -16,8 +16,8 @@ from .events import (
 )
 from .governance import (
     AllowCause,
-    DecisionCause,
     Decision,
+    DecisionCause,
     HitlPendingCause,
     LockdownCause,
     RuleEval,

@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import concurrent.futures
-from typing import Any, Coroutine, TypeVar
+from collections.abc import Coroutine
+from typing import Any, TypeVar
 
 T = TypeVar("T")
 
@@ -20,7 +21,7 @@ def run_sync(coro: Coroutine[Any, Any, T]) -> T:
     discouraged — prefer the async API there.
     """
     try:
-        loop = asyncio.get_running_loop()
+        asyncio.get_running_loop()
     except RuntimeError:
         # No running event loop — straightforward case.
         return asyncio.run(coro)

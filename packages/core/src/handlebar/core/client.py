@@ -112,7 +112,7 @@ class HandlebarClient:
     # ------------------------------------------------------------------
 
     @classmethod
-    async def init(cls, config: HandlebarClientConfig) -> "HandlebarClient":
+    async def init(cls, config: HandlebarClientConfig) -> HandlebarClient:
         """Async factory — equivalent to JS ``HandlebarClient.init(config)``."""
         client = cls(config)
         await client._init_sinks(config.sinks)
@@ -120,14 +120,16 @@ class HandlebarClient:
 
         client._init_task = asyncio.ensure_future(client._init_agent(config))
         client._init_task.add_done_callback(
-            lambda t: logger.error("[Handlebar] Async init error: %s", t.exception())
-            if not t.cancelled() and t.exception()
-            else None
+            lambda t: (
+                logger.error("[Handlebar] Async init error: %s", t.exception())
+                if not t.cancelled() and t.exception()
+                else None
+            )
         )
         return client
 
     @classmethod
-    def init_sync(cls, config: HandlebarClientConfig) -> "HandlebarClient":
+    def init_sync(cls, config: HandlebarClientConfig) -> HandlebarClient:
         """Sync factory — wraps ``init()`` for use in synchronous contexts."""
         return run_sync(cls.init(config))
 
@@ -221,16 +223,16 @@ class HandlebarClient:
     async def _init_sinks(self, sinks: list[SinkConfig] | None) -> None:
         if not sinks:
             endpoint = resolve_api_endpoint(self._config.api_endpoint)
-            api_key = (
-                self._config.api_key or os.environ.get("HANDLEBAR_API_KEY")
-            )
+            api_key = self._config.api_key or os.environ.get("HANDLEBAR_API_KEY")
             self._bus.add(create_http_sink(endpoint, api_key))
         else:
             for sink_cfg in sinks:
                 if sink_cfg.type == "console":
                     self._bus.add(create_console_sink(sink_cfg.format))  # type: ignore[arg-type]
                 elif sink_cfg.type == "http":
-                    endpoint = resolve_api_endpoint(getattr(sink_cfg, "endpoint", None) or self._config.api_endpoint)
+                    endpoint = resolve_api_endpoint(
+                        getattr(sink_cfg, "endpoint", None) or self._config.api_endpoint
+                    )
                     api_key = (
                         getattr(sink_cfg, "api_key", None)
                         or self._config.api_key

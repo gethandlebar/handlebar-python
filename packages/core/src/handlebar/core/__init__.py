@@ -40,12 +40,12 @@ from .subjects import SubjectExtractor, SubjectRef, SubjectRegistry, sanitise_su
 from .tokens import tokenise_count
 from .tool import ToolMeta, define_tool, wrap_tool
 from .types import (
+    FAILCLOSED_DECISION,
+    FAILOPEN_DECISION,
     Actor,
     AgentDescriptor,
     ConsoleSinkConfig,
     EnforceMode,
-    FAILCLOSED_DECISION,
-    FAILOPEN_DECISION,
     HandlebarConfig,
     HttpSinkConfig,
     InsertableTool,

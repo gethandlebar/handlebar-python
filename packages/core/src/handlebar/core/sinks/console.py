@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from typing import TYPE_CHECKING, Literal
 
 from .types import Sink
@@ -17,7 +16,7 @@ class ConsoleSink(Sink):
     def __init__(self, format: Literal["json", "pretty"] = "json") -> None:
         self._format = format
 
-    def write_batch(self, agent_id: str, events: list["AuditEvent"]) -> None:
+    def write_batch(self, agent_id: str, events: list[AuditEvent]) -> None:
         for event in events:
             if self._format == "json":
                 # Pydantic serialise with camelCase aliases to match the wire format.

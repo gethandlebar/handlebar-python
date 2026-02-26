@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal, Union
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
@@ -35,7 +35,20 @@ class ToolTagCondition(_Base):
 class ToolArgCondition(_Base):
     kind: Literal["toolArg"]
     path: str
-    op: Literal["eq", "neq", "contains", "startsWith", "endsWith", "glob", "in", "lt", "lte", "gt", "gte", "exists"]
+    op: Literal[
+        "eq",
+        "neq",
+        "contains",
+        "startsWith",
+        "endsWith",
+        "glob",
+        "in",
+        "lt",
+        "lte",
+        "gt",
+        "gte",
+        "exists",
+    ]
     value: Any = None
 
 
@@ -69,7 +82,7 @@ class TimeGateCondition(_Base):
     timezone: str
     days: list[Literal["mon", "tue", "wed", "thu", "fri", "sat", "sun"]] | None = None
     start: str | None = None  # HH:MM
-    end: str | None = None    # HH:MM
+    end: str | None = None  # HH:MM
 
 
 class RequireSubjectCondition(_Base):
@@ -97,35 +110,35 @@ class MetricWindowCondition(_Base):
 
 class AndCondition(_Base):
     kind: Literal["and"]
-    conditions: list["RuleCondition"]
+    conditions: list[RuleCondition]
 
 
 class OrCondition(_Base):
     kind: Literal["or"]
-    conditions: list["RuleCondition"]
+    conditions: list[RuleCondition]
 
 
 class NotCondition(_Base):
     kind: Literal["not"]
-    condition: "RuleCondition"
+    condition: RuleCondition
 
 
-RuleCondition = Union[
-    ToolNameCondition,
-    ToolTagCondition,
-    ToolArgCondition,
-    EnduserTagCondition,
-    MaxCallsCondition,
-    SequenceCondition,
-    ExecutionTimeCondition,
-    TimeGateCondition,
-    RequireSubjectCondition,
-    SignalCondition,
-    MetricWindowCondition,
-    AndCondition,
-    OrCondition,
-    NotCondition,
-]
+RuleCondition = (
+    ToolNameCondition
+    | ToolTagCondition
+    | ToolArgCondition
+    | EnduserTagCondition
+    | MaxCallsCondition
+    | SequenceCondition
+    | ExecutionTimeCondition
+    | TimeGateCondition
+    | RequireSubjectCondition
+    | SignalCondition
+    | MetricWindowCondition
+    | AndCondition
+    | OrCondition
+    | NotCondition
+)
 
 # Rebuild models that reference the forward ref.
 AndCondition.model_rebuild()

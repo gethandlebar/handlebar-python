@@ -21,7 +21,7 @@ class Sink(ABC):
         """Called once before the sink is first used."""
 
     @abstractmethod
-    def write_batch(self, agent_id: str, events: list["AuditEvent"]) -> None:
+    def write_batch(self, agent_id: str, events: list[AuditEvent]) -> None:
         """Write a batch of events. Must be non-blocking (e.g. queues internally)."""
 
     async def drain(self) -> None:

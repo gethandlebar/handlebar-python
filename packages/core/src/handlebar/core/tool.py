@@ -30,9 +30,7 @@ def wrap_tool(tool: Any, meta: ToolMeta) -> Any:
     """
     tool.tags = meta.tags if meta.tags is not None else getattr(tool, "tags", []) or []
     tool.description = (
-        meta.description
-        if meta.description is not None
-        else getattr(tool, "description", "") or ""
+        meta.description if meta.description is not None else getattr(tool, "description", "") or ""
     )
     return tool
 

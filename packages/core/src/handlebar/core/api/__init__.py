@@ -1,4 +1,11 @@
-from .manager import ApiManager, DEFAULT_ENDPOINT, EvaluateAfterRequest, EvaluateBeforeRequest, EvaluateRequest, LockdownStatus
+from .manager import (
+    DEFAULT_ENDPOINT,
+    ApiManager,
+    EvaluateAfterRequest,
+    EvaluateBeforeRequest,
+    EvaluateRequest,
+    LockdownStatus,
+)
 
 __all__ = [
     "ApiManager",

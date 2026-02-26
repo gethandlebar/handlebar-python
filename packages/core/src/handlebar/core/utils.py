@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import time as _time
+from datetime import UTC
 from typing import Any
 
 # ---------------------------------------------------------------------------
@@ -20,9 +21,9 @@ def milliseconds_since(initial_time: float) -> float:
 
 def now_iso() -> str:
     """Return the current UTC time as an ISO-8601 string."""
-    from datetime import datetime, timezone
+    from datetime import datetime
 
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 # ---------------------------------------------------------------------------

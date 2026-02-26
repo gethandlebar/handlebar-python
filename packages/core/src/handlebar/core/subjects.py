@@ -69,8 +69,8 @@ class SubjectRegistry:
             ctx = {"tool": tool, "toolName": tool_name, "toolArgs": tool_args, "run": run}
             result = extractor(ctx)
             if inspect.isawaitable(result):
-                return await result
-            return result  # type: ignore[return-value]
+                return await result  # ty:ignore[invalid-return-type]
+            return result
         except Exception:
             return []
 

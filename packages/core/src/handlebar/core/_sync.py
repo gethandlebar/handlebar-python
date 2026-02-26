@@ -30,4 +30,4 @@ def run_sync(coro: Coroutine[Any, Any, T]) -> T:
         # Spin up a worker thread with its own fresh event loop.
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
             future = pool.submit(asyncio.run, coro)
-            return future.result()
+            return future.result()  # ty:ignore[invalid-return-type]

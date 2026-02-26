@@ -51,7 +51,7 @@ class AgentMetricHookRegistry:
                     result = await raw
                 else:
                     result = raw
-                return result
+                return result  # ty:ignore[invalid-return-type]
 
             coro = _run_hook(hook, ctx)
 

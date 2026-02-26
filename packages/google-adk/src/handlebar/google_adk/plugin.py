@@ -308,7 +308,7 @@ def _adk_request_to_messages(llm_request: LlmRequest) -> list[LLMMessage]:
             if fr:
                 chunks.append(f"[tool_result:{fr.name}]")
 
-        messages.append(LLMMessage(role=hb_role, content="\n".join(chunks)))  # type: ignore[arg-type]
+        messages.append(LLMMessage(role=hb_role, content="\n".join(chunks)))
     return messages
 
 

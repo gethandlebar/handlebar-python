@@ -24,6 +24,11 @@ Issues = "https://github.com/gethandlebar/handlebar-python/issues"
 [tool.hatch.build.targets.wheel]
 packages = ["src/handlebar"]
 
+[dependency-groups]
+dev = [
+    "google-adk[extensions]>=1.0.0",
+]
+
 [tool.uv.sources]
 handlebar-core = { workspace = true }
 

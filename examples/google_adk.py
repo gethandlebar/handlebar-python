@@ -3,7 +3,7 @@ Example: Google ADK agent governed by Handlebar.
 
 Usage:
     uv sync --all-packages
-    HANDLEBAR_API_KEY=... OPENAI_API_KEY=... uv run python examples/google_adk_agent.py
+    HANDLEBAR_API_KEY=... OPENAI_API_KEY=... uv run python examples/google_adk.py
 
 Environment variables:
     HANDLEBAR_API_KEY   Your Handlebar API key (required for governance / audit)
@@ -20,6 +20,7 @@ from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
 from google.adk.runners import InMemoryRunner
 from google.adk.tools import FunctionTool
+from google.genai import types as genai_types
 
 from handlebar.google_adk import HandlebarPlugin
 
@@ -110,6 +111,9 @@ plugin = HandlebarPlugin(
 )
 
 runner = InMemoryRunner(agent=agent, plugins=[plugin])
+# InMemoryRunner defaults auto_create_session=False; flip it so run_async
+# creates the session on first use rather than raising ValueError.
+runner.auto_create_session = True
 
 
 # ---------------------------------------------------------------------------
@@ -128,10 +132,14 @@ async def main() -> None:
 
     for question in questions:
         print(f"\nUser: {question}")
+        content = genai_types.Content(
+            role="user",
+            parts=[genai_types.Part(text=question)],
+        )
         async for event in runner.run_async(
             user_id=user_id,
             session_id=session_id,
-            new_message=question,
+            new_message=content,
         ):
             if event.is_final_response():
                 text = event.content.parts[0].text if event.content and event.content.parts else "(no response)"

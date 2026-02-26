@@ -98,6 +98,8 @@ class HandlebarPlugin(BasePlugin):
                 "`client`, `agent_slug`, or `agent`."
             )
 
+        super().__init__(name="handlebar")
+
         self._client: HandlebarClient | None = client
         self._init_lock = asyncio.Lock()
 
@@ -142,7 +144,7 @@ class HandlebarPlugin(BasePlugin):
     # Agent lifecycle
     # ------------------------------------------------------------------
 
-    async def before_agent_callback(self, *, callback_context) -> None:
+    async def before_agent_callback(self, *, agent, callback_context) -> None:
         """Start a Handlebar run for this ADK invocation."""
         inv_id = callback_context.invocation_id
         if inv_id in self._states:
@@ -154,7 +156,7 @@ class HandlebarPlugin(BasePlugin):
         self._states[inv_id] = _InvocationState(run=run)
         return None
 
-    async def after_agent_callback(self, *, callback_context, result=None) -> None:
+    async def after_agent_callback(self, *, agent, callback_context, result=None) -> None:
         """End the Handlebar run, flushing all pending audit events."""
         inv_id = callback_context.invocation_id
         state = self._states.pop(inv_id, None)

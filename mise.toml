@@ -6,10 +6,13 @@ python.uv_venv_auto = true
 
 [tasks.types]
 description = "Check types across all code"
-run = 'uv run --package handlebar-google-adk ty check packages/core/src packages/google-adk/src'
+run = 'uvx ty check'
 
 [tasks.lint]
-run = 'uv run ruff check'
+run = 'uvx ruff check'
 
 [tasks.format]
-run = 'uv run ruff format'
+run = 'uvx ruff format'
+
+[tasks.ci]
+depends = ["types", "lint"]

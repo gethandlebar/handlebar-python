@@ -1,0 +1,38 @@
+name: Pull request checks
+on:
+  pull_request:
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    name: CI checks
+    strategy:
+      matrix:
+        python-version:
+          - "3.11"
+          #- "3.12" Only need the matrix when we've got tests
+          #- "3.13"
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv and set the Python version
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
+
+      - name: Lint
+        run: uvx ruff check
+
+      - name: Type checking
+        run: uvx ty check

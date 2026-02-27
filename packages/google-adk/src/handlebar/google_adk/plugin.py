@@ -9,9 +9,9 @@ from dataclasses import dataclass
 from typing import Any
 
 from google.adk.agents.base_agent import BaseAgent
+from google.adk.agents.callback_context import CallbackContext
 from google.adk.models import LlmRequest, LlmResponse
 from google.adk.plugins.base_plugin import BasePlugin
-from google.adk.agents.callback_context import CallbackContext
 from handlebar.core import (
     Actor,
     AgentDescriptor,

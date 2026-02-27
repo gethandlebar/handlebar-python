@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "handlebar-google-adk"
-version = "0.1.0"
+version = "0.2.0"
 description = "AI control layer for Google ADK agents"
 readme = "README.md"
 license = "Apache-2.0"
@@ -12,7 +12,7 @@ authors = [{ name = "Handlebar Team", email = "contact@gethandlebar.com" }]
 keywords = ["governance", "ai", "agent", "llm", "guardrails", "handlebar", "safety"]
 requires-python = ">=3.11"
 dependencies = [
-    "handlebar-core>=0.1.0",
+    "handlebar-core>=0.2.0",
     "google-adk>=1.0.0",
 ]
 

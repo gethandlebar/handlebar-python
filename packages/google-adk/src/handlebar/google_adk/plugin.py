@@ -8,9 +8,12 @@ import time
 from dataclasses import dataclass
 from typing import Any
 
+from google.adk.agents.base_agent import BaseAgent
 from google.adk.models import LlmRequest, LlmResponse
 from google.adk.plugins.base_plugin import BasePlugin
+from google.adk.agents.callback_context import CallbackContext
 from handlebar.core import (
+    Actor,
     AgentDescriptor,
     EnforceMode,
     HandlebarClient,
@@ -29,6 +32,18 @@ from handlebar.core import (
 from handlebar.core.schema.governance import RunControl, Verdict
 
 logger = logging.getLogger("handlebar.google_adk")
+
+
+def model_string_to_info(model: str) -> ModelInfo:
+    if "/" in model:
+        [provider, model_name] = model.split("/")
+        return ModelInfo(provider=provider, name=model_name)
+
+    if (":") in model:
+        [provider, model_name] = model.split(":")
+        return ModelInfo(provider=provider, name=model_name)
+
+    return ModelInfo(provider=None, name=model)
 
 
 # ---------------------------------------------------------------------------
@@ -125,9 +140,11 @@ class HandlebarPlugin(BasePlugin):
         """Return the client, initialising it lazily on first call."""
         if self._client is not None:
             return self._client
+
         async with self._init_lock:
             if self._client is not None:  # double-checked locking
                 return self._client
+
             cfg = HandlebarClientConfig(
                 agent=self._agent_descriptor,
                 api_key=self._api_key,
@@ -138,22 +155,59 @@ class HandlebarPlugin(BasePlugin):
                 tools=self._tools,
             )
             self._client = await HandlebarClient.init(cfg)
+
         return self._client
 
     # ------------------------------------------------------------------
     # Agent lifecycle
     # ------------------------------------------------------------------
 
-    async def before_agent_callback(self, *, agent, callback_context) -> None:
+    async def before_agent_callback(
+        self, *, agent: BaseAgent, callback_context: CallbackContext
+    ) -> None:
         """Start a Handlebar run for this ADK invocation."""
         inv_id = callback_context.invocation_id
         logger.debug("[Handlebar] before_agent_callback invocation_id=%s", inv_id)
+
         if inv_id in self._states:
             # Nested/sub-agent within the same invocation — reuse the run.
             return None
 
+        # Derive model from the agent's own config (LlmAgent.model) so callers
+        # don't have to declare it twice.  The value may be a plain string or a
+        # BaseLlm instance; in both cases we extract a string name.
+        model_info: ModelInfo | None = None
+        model_raw = getattr(agent, "model", None)
+        if model_raw is not None:
+            model_str = (
+                model_raw
+                if isinstance(model_raw, str)
+                else (
+                    getattr(model_raw, "model_name", None)
+                    or getattr(model_raw, "model", None)
+                    or str(model_raw)
+                )
+            )
+            if model_str:
+                model_info = model_string_to_info(model_str)
+
+        # Use the ADK session's user_id as the Handlebar end-user identity.
+        user_id: str | None = callback_context.user_id
+        actor = Actor(external_id=user_id) if user_id else None
+
+        # Propagate the ADK session ID so Handlebar can group runs.
+        session = getattr(callback_context, "session", None)
+        session_id: str | None = session.id if session is not None else None
+
         client = await self._get_client()
-        run = await client.start_run(RunConfig(run_id=inv_id))
+        run = await client.start_run(
+            RunConfig(
+                run_id=inv_id,
+                session_id=session_id,
+                actor=actor,
+                model=model_info,
+            )
+        )
         self._states[inv_id] = _InvocationState(run=run)
         return None
 
@@ -341,8 +395,9 @@ def _adk_response_to_llm_response(
             output_tokens=getattr(usage_meta, "candidates_token_count", None),
         )
 
+    model_info = model_string_to_info(model_name)
     return HBLLMResponse(
-        model=ModelInfo(name=model_name or "unknown", provider="google"),
+        model=model_info,
         content=response_parts,
         output_text=output_text,
         usage=usage,

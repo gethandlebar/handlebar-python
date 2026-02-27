@@ -108,7 +108,7 @@ agent = LlmAgent(
 #   "off"     — no API calls at all
 
 plugin = HandlebarPlugin(
-    agent_slug="example-agent",
+    agent_slug="google-adk-agent",
     enforce_mode="enforce",
 )
 

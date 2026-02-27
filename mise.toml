@@ -12,7 +12,7 @@ run = 'uvx ty check'
 run = 'uvx ruff check'
 
 [tasks.format]
-run = 'uvx ruff format'
+run = 'uvx ruff format && uvx ruff check --fix'
 
 [tasks.ci]
 depends = ["types", "lint"]

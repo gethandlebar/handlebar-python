@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "handlebar-langchain"
+version = "0.2.0"
+description = "AI control layer for Langchain agents"
+readme = "README.md"
+license = "Apache-2.0"
+authors = [{ name = "Handlebar Team", email = "contact@gethandlebar.com" }]
+keywords = ["governance", "ai", "agent", "llm", "guardrails", "handlebar", "safety"]
+requires-python = ">=3.11"
+dependencies = [
+    "handlebar-core>=0.2.0",
+    "langchain-core>=1.0.0",
+    "langchain>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://gethandlebar.com"
+Repository = "https://github.com/gethandlebar/handlebar-python"
+Issues = "https://github.com/gethandlebar/handlebar-python/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/handlebar"]
+
+[dependency-groups]
+dev = [
+    "langchain>=1.2.10",
+    "langchain-openai>=1.1.10",
+]
+
+[tool.uv.sources]
+handlebar-core = { workspace = true }
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
